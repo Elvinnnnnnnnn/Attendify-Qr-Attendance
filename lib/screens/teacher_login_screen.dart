@@ -3,6 +3,7 @@ import 'register_screen.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'teacher_dashboard.dart';
+import 'not_verified_screen.dart';
 
 class TeacherLoginScreen extends StatefulWidget {
   const TeacherLoginScreen({super.key});
@@ -101,6 +102,19 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
                   );
 
                   User user = FirebaseAuth.instance.currentUser!;
+                  await user.reload();
+                  user = FirebaseAuth.instance.currentUser!;
+
+                  if (!user.emailVerified) {
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => const NotVerifiedScreen(),
+                      ),
+                    );
+                    return;
+                  }
+
 
                   DocumentSnapshot userDoc = await FirebaseFirestore.instance
                       .collection('users')

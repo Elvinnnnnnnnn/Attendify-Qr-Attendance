@@ -15,6 +15,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController nameController = TextEditingController();
   final TextEditingController emailController = TextEditingController();
   final TextEditingController passwordController = TextEditingController();
+  final TextEditingController courseController = TextEditingController();
 
   // 🔹 Student-only controllers
   final TextEditingController blkController = TextEditingController();
@@ -36,8 +37,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
     }
 
     if (widget.role == 'student') {
-      if (blkController.text.trim().isEmpty ||
-          yearController.text.trim().isEmpty) {
+      if (courseController.text.trim().isEmpty ||
+        blkController.text.trim().isEmpty ||
+        yearController.text.trim().isEmpty) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
               content: Text('Please complete student information')),
@@ -65,11 +67,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
       if (widget.role == 'student') {
         userData.addAll({
+          'course': courseController.text.trim(),
           'blk': blkController.text.trim(),
           'year': yearController.text.trim(),
           'studentType': studentType,
         });
       }
+
+      await userCredential.user!.sendEmailVerification();
 
       await FirebaseFirestore.instance
           .collection('users')
@@ -77,8 +82,13 @@ class _RegisterScreenState extends State<RegisterScreen> {
           .set(userData);
 
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Account created successfully')),
+        const SnackBar(
+          content: Text('Verification email sent. Check your Gmail.'),
+        ),
       );
+
+      await FirebaseAuth.instance.signOut();
+      Navigator.pop(context);
 
       Navigator.pop(context);
     } on FirebaseAuthException catch (e) {
@@ -99,10 +109,10 @@ class _RegisterScreenState extends State<RegisterScreen> {
         centerTitle: true,
         elevation: 0,
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
             Text(
               'Register as $roleText',
@@ -168,6 +178,19 @@ class _RegisterScreenState extends State<RegisterScreen> {
 
             // 🔹 STUDENT-ONLY FIELDS
             if (widget.role == 'student') ...[
+              const SizedBox(height: 20),
+
+              TextField(
+                controller: courseController,
+                decoration: InputDecoration(
+                  labelText: 'Course',
+                  prefixIcon: const Icon(Icons.book_outlined),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
+
               const SizedBox(height: 20),
 
               TextField(

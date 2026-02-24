@@ -29,9 +29,10 @@ class StudentDashboard extends StatelessWidget {
           ),
         ],
       ),
-      body: Padding(
+      body: SingleChildScrollView(
         padding: const EdgeInsets.all(24.0),
         child: Column(
+          crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
 
             // Welcome
@@ -96,6 +97,11 @@ class StudentDashboard extends StatelessWidget {
                         icon: Icons.person_outline,
                         label: 'Name',
                         value: data['name'],
+                      ),
+                      _InfoRow(
+                        icon: Icons.book_outlined,
+                        label: 'Course',
+                        value: data['course'] ?? '-',
                       ),
                       _InfoRow(
                         icon: Icons.group_outlined,

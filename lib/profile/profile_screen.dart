@@ -73,10 +73,12 @@ class ProfileScreen extends StatelessWidget {
   Future<void> _editStudentInfo(
     BuildContext context,
     String userId,
+    String course,
     String blk,
     String year,
     String type,
   ) async {
+    final courseController = TextEditingController(text: course);
     final blkController = TextEditingController(text: blk);
     final yearController = TextEditingController(text: year);
     String studentType = type;
@@ -89,6 +91,14 @@ class ProfileScreen extends StatelessWidget {
           content: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
+              TextField(
+                controller: courseController,
+                decoration: const InputDecoration(
+                  labelText: 'Course',
+                  border: OutlineInputBorder(),
+                ),
+              ),
+              const SizedBox(height: 12),
               TextField(
                 controller: blkController,
                 decoration: const InputDecoration(
@@ -149,11 +159,11 @@ class ProfileScreen extends StatelessWidget {
                     .collection('users')
                     .doc(userId)
                     .update({
-                  'blk': blkController.text.trim(),
-                  'year': yearController.text.trim(),
-                  'studentType': studentType,
-                });
-
+                      'course': courseController.text.trim(),
+                      'blk': blkController.text.trim(),
+                      'year': yearController.text.trim(),
+                      'studentType': studentType,
+                    });
                 Navigator.pop(context);
               },
               child: const Text('Save'),
@@ -245,8 +255,11 @@ class ProfileScreen extends StatelessWidget {
   /// 🔹 Change Profile Photo
   Future<void> _changeProfilePhoto(BuildContext context, String userId) async {
     final picker = ImagePicker();
-    final picked =
-        await picker.pickImage(source: ImageSource.gallery, imageQuality: 70);
+    final picked = await picker.pickImage(
+      source: ImageSource.gallery,
+      imageQuality: 40,
+      maxWidth: 600,
+    );
 
     if (picked == null) return;
 
@@ -378,6 +391,11 @@ class ProfileScreen extends StatelessWidget {
 
                 if (role == 'student') ...[
                   _InfoCard(
+                    icon: Icons.book_outlined,
+                    label: 'Course',
+                    value: data['course'] ?? '-',
+                  ),
+                  _InfoCard(
                     icon: Icons.group_outlined,
                     label: 'Block',
                     value: data['blk'],
@@ -413,9 +431,10 @@ class ProfileScreen extends StatelessWidget {
                     onPressed: () => _editStudentInfo(
                       context,
                       user.uid,
-                      data['blk'],
-                      data['year'],
-                      data['studentType'],
+                      data['course'] ?? '',
+                      data['blk'] ?? '',
+                      data['year'] ?? '',
+                      data['studentType'] ?? 'regular',
                     ),
                     style: OutlinedButton.styleFrom(
                       minimumSize: const Size(double.infinity, 56),
