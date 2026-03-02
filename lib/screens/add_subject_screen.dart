@@ -60,6 +60,14 @@ class _AddSubjectScreenState extends State<AddSubjectScreen> {
 
     final user = FirebaseAuth.instance.currentUser!;
 
+    // Get teacher name from users collection
+    final teacherDoc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(user.uid)
+        .get();
+
+    final teacherName = teacherDoc.data()?['name'];
+
     final classDateTime = DateTime(
       selectedDate!.year,
       selectedDate!.month,
@@ -74,6 +82,7 @@ class _AddSubjectScreenState extends State<AddSubjectScreen> {
       'blk': blkController.text.trim(),
       'year': yearController.text.trim(),
       'teacherId': user.uid,
+      'teacherName': teacherName, // IMPORTANT
       'createdAt': Timestamp.now(),
       'classDate': Timestamp.fromDate(classDateTime),
       'classTime': _formatTime(selectedTime!),

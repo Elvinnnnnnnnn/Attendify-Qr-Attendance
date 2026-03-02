@@ -18,6 +18,10 @@ class TeacherAttendanceScreen extends StatelessWidget {
   ) async {
     final pdf = pw.Document();
 
+    final teacherName = subject['teacherId'] != null
+        ? await getTeacherName(subject['teacherId'])
+        : null;
+
     final List<List<String>> tableData = [];
 
     for (var record in records) {
@@ -36,15 +40,9 @@ class TeacherAttendanceScreen extends StatelessWidget {
         student['blk'] ?? '',
         student['year'] ?? '',
         student['studentType'] ?? '',
-        timeInTs != null
-            ? formatDate(timeInTs.toDate())
-            : '',
-        timeInTs != null
-            ? formatTime(timeInTs.toDate())
-            : '',
-        timeOutTs != null
-            ? formatTime(timeOutTs.toDate())
-            : '',
+        timeInTs != null ? formatDate(timeInTs.toDate()) : '',
+        timeInTs != null ? formatTime(timeInTs.toDate()) : '',
+        timeOutTs != null ? formatTime(timeOutTs.toDate()) : '',
       ]);
     }
 
@@ -52,20 +50,25 @@ class TeacherAttendanceScreen extends StatelessWidget {
       pw.MultiPage(
         build: (context) => [
           pw.Text(
-            subject['subjectName'],
+            subject['subjectName'] ?? '',
             style: pw.TextStyle(
               fontSize: 20,
               fontWeight: pw.FontWeight.bold,
             ),
           ),
           pw.SizedBox(height: 5),
+          if (teacherName != null)
+            pw.Text(
+              'Teacher: $teacherName',
+              style: const pw.TextStyle(fontSize: 14),
+            ),
+          pw.SizedBox(height: 10),
           pw.Text(subject['description'] ?? ''),
           pw.SizedBox(height: 10),
           pw.Text(
             'BLK: ${subject['blk'] ?? ''}    Year: ${subject['year'] ?? ''}',
           ),
           pw.SizedBox(height: 20),
-
           pw.Table.fromTextArray(
             headers: [
               'Name',
@@ -111,6 +114,15 @@ class TeacherAttendanceScreen extends StatelessWidget {
         .get();
 
     return doc.data() ?? {};
+  }
+
+  Future<String?> getTeacherName(String teacherId) async {
+    final doc = await FirebaseFirestore.instance
+        .collection('users')
+        .doc(teacherId)
+        .get();
+
+    return doc.data()?['name'];
   }
 
   String formatTime(DateTime date) {
@@ -165,55 +177,78 @@ class TeacherAttendanceScreen extends StatelessWidget {
           return Column(
             children: [
               // SUBJECT INFO CARD
-              Container(
-                width: double.infinity,
-                padding: const EdgeInsets.all(16),
-                margin: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: primaryColor.withOpacity(0.08),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: primaryColor),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Text(
-                      subject['subjectName'],
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: primaryColor,
-                      ),
-                    ),
-                    const SizedBox(height: 4),
-                    Text(
-                      subject['description'],
-                      style: const TextStyle(
-                        fontSize: 13,
-                        color: Colors.black54,
-                      ),
-                    ),
-                    const SizedBox(height: 6),
-                    if (subject['blk'] != null && subject['year'] != null)
+              // SUBJECT INFO CARD
+            Container(
+              width: double.infinity,
+              padding: const EdgeInsets.all(16),
+              margin: const EdgeInsets.all(16),
+              decoration: BoxDecoration(
+                color: primaryColor.withOpacity(0.08),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: primaryColor),
+              ),
+              child: FutureBuilder<String?>(
+                future: subject['teacherId'] != null
+                    ? getTeacherName(subject['teacherId'])
+                    : Future.value(null),
+                builder: (context, teacherSnapshot) {
+                  final teacherName = teacherSnapshot.data;
+
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
                       Text(
-                        'BLK: ${subject['blk']} • Year: ${subject['year']}',
+                        subject['subjectName'] ?? '',
                         style: const TextStyle(
-                          fontSize: 12,
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: primaryColor,
+                        ),
+                      ),
+                      if (teacherName != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 4),
+                          child: Text(
+                            'Teacher: $teacherName',
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.w500,
+                            ),
+                          ),
+                        ),
+                      const SizedBox(height: 6),
+                      Text(
+                        subject['description'] ?? '',
+                        style: const TextStyle(
+                          fontSize: 13,
                           color: Colors.black54,
                         ),
                       ),
-                    if (subject['classDate'] != null &&
-                        subject['classTime'] != null)
-                      Padding(
-                        padding: const EdgeInsets.only(top: 6),
-                        child: Text(
-                          '${formatDate(subject['classDate'].toDate())} • ${subject['classTime']}',
-                          style: const TextStyle(fontSize: 12),
+                      if (subject['blk'] != null && subject['year'] != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            'BLK: ${subject['blk']} • Year: ${subject['year']}',
+                            style: const TextStyle(
+                              fontSize: 12,
+                              color: Colors.black54,
+                            ),
+                          ),
                         ),
-                      ),
-                  ],
-                ),
+                      if (subject['classDate'] != null &&
+                          subject['classTime'] != null)
+                        Padding(
+                          padding: const EdgeInsets.only(top: 6),
+                          child: Text(
+                            '${formatDate(subject['classDate'].toDate())} • ${subject['classTime']}',
+                            style: const TextStyle(fontSize: 12),
+                          ),
+                        ),
+                    ],
+                  );
+                },
               ),
+            ),
 
               // ATTENDANCE LIST
               Expanded(

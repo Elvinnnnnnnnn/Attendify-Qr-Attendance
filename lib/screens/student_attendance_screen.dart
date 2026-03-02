@@ -92,13 +92,12 @@ class StudentAttendanceScreen extends StatelessWidget {
                   }
 
                   final subjectData =
-                      subjectSnapshot.data!.data() as Map<String, dynamic>;
+                  subjectSnapshot.data!.data() as Map<String, dynamic>;
 
                   final subjectName = subjectData['subjectName'];
-
-                  // ✅ ADDED: BLK & YEAR
                   final String? blk = subjectData['blk'];
                   final String? year = subjectData['year'];
+                  final String? teacherName = subjectData['teacherName'];
 
                   String scheduleText = 'Schedule: Not set';
 
@@ -113,11 +112,11 @@ class StudentAttendanceScreen extends StatelessWidget {
 
                   return _AttendanceCard(
                     subjectName: subjectName,
-                    blk: blk, // ✅ ADDED
-                    year: year, // ✅ ADDED
+                    teacherName: teacherName,
+                    blk: blk,
+                    year: year,
                     scheduleText: scheduleText,
-                    timeIn:
-                        timeInTs?.toDate() ?? scannedTs?.toDate(),
+                    timeIn: timeInTs?.toDate() ?? scannedTs?.toDate(),
                     timeOut: timeOutTs?.toDate(),
                     onArchive: () async {
                       await FirebaseFirestore.instance
@@ -126,37 +125,10 @@ class StudentAttendanceScreen extends StatelessWidget {
                           .update({'isArchived': true});
                     },
                     onDelete: () async {
-                      final confirm = await showDialog<bool>(
-                        context: context,
-                        builder: (context) => AlertDialog(
-                          title: const Text('Delete Attendance'),
-                          content: const Text(
-                            'Are you sure you want to delete this attendance record?',
-                          ),
-                          actions: [
-                            TextButton(
-                              onPressed: () =>
-                                  Navigator.pop(context, false),
-                              child: const Text('Cancel'),
-                            ),
-                            TextButton(
-                              onPressed: () =>
-                                  Navigator.pop(context, true),
-                              child: const Text(
-                                'Delete',
-                                style: TextStyle(color: Colors.red),
-                              ),
-                            ),
-                          ],
-                        ),
-                      );
-
-                      if (confirm == true) {
-                        await FirebaseFirestore.instance
-                            .collection('attendance')
-                            .doc(record.id)
-                            .delete();
-                      }
+                      await FirebaseFirestore.instance
+                          .collection('attendance')
+                          .doc(record.id)
+                          .delete();
                     },
                   );
                 },
@@ -184,8 +156,9 @@ class StudentAttendanceScreen extends StatelessWidget {
 /// 🔹 Attendance Card
 class _AttendanceCard extends StatelessWidget {
   final String subjectName;
-  final String? blk; // ✅ ADDED
-  final String? year; // ✅ ADDED
+  final String? teacherName;
+  final String? blk;
+  final String? year; 
   final String scheduleText;
   final DateTime? timeIn;
   final DateTime? timeOut;
@@ -194,6 +167,7 @@ class _AttendanceCard extends StatelessWidget {
 
   const _AttendanceCard({
     required this.subjectName,
+    required this.teacherName,
     required this.blk,
     required this.year,
     required this.scheduleText,
@@ -222,26 +196,38 @@ class _AttendanceCard extends StatelessWidget {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: [
-              Expanded(
-                child: Text(
-                  subjectName,
-                  style: const TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                  ),
-                ),
-              ),
-              IconButton(
-                icon: const Icon(Icons.archive),
-                onPressed: onArchive,
-              ),
-              IconButton(
-                icon: const Icon(Icons.delete, color: Colors.red),
-                onPressed: onDelete,
-              ),
-            ],
+      children: [
+        Expanded(
+          child: Text(
+            subjectName,
+            style: const TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+            ),
           ),
+        ),
+        IconButton(
+          icon: const Icon(Icons.archive),
+          onPressed: onArchive,
+        ),
+        IconButton(
+          icon: const Icon(Icons.delete, color: Colors.red),
+          onPressed: onDelete,
+        ),
+      ],
+    ),
+    if (teacherName != null)
+      Padding(
+        padding: const EdgeInsets.only(top: 2),
+        child: Text(
+          'Teacher: $teacherName',
+          style: const TextStyle(
+            fontSize: 12,
+            color: Colors.black87,
+            fontWeight: FontWeight.w500,
+          ),
+        ),
+      ),
 
           // ✅ ADDED: BLK & YEAR DISPLAY
           if (blk != null && year != null) ...[

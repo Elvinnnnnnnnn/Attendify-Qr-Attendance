@@ -56,11 +56,11 @@ class TeacherDashboard extends StatelessWidget {
             const SizedBox(height: 30),
 
             // 🔹 TEACHER INFO CARD (ADDED)
-            FutureBuilder<DocumentSnapshot>(
-              future: FirebaseFirestore.instance
+            StreamBuilder<DocumentSnapshot>(
+              stream: FirebaseFirestore.instance
                   .collection('users')
                   .doc(user.uid)
-                  .get(),
+                  .snapshots(),
               builder: (context, snapshot) {
                 if (!snapshot.hasData) {
                   return const Padding(
