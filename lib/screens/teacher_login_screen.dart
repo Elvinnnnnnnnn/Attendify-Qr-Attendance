@@ -4,6 +4,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'teacher_dashboard.dart';
 import 'not_verified_screen.dart';
+import 'package:shared_preferences/shared_preferences.dart';
 
 class TeacherLoginScreen extends StatefulWidget {
   const TeacherLoginScreen({super.key});
@@ -17,6 +18,27 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
   final TextEditingController passwordController = TextEditingController();
 
   static const primaryColor = Color(0xFFD72520);
+
+  bool obscurePassword = true;
+  bool rememberMe = false;  
+
+  Future<void> _loadSavedEmail() async {
+  final prefs = await SharedPreferences.getInstance();
+  final savedEmail = prefs.getString('remember_email_teacher');
+
+  if (savedEmail != null) {
+      setState(() {
+        emailController.text = savedEmail;
+        rememberMe = true;
+      });
+    }
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _loadSavedEmail();
+  }
 
   Future<void> _forgotPassword() async {
     final email = emailController.text.trim();
@@ -99,14 +121,43 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
             // Password Field
             TextField(
               controller: passwordController,
-              obscureText: true,
+              obscureText: obscurePassword,
               decoration: InputDecoration(
                 labelText: 'Password',
                 prefixIcon: const Icon(Icons.lock_outline),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    obscurePassword ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      obscurePassword = !obscurePassword;
+                    });
+                  },
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),
               ),
+            ),
+
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              children: [
+                Row(
+                  children: [
+                    Checkbox(
+                      value: rememberMe,
+                      onChanged: (value) {
+                        setState(() {
+                          rememberMe = value!;
+                        });
+                      },
+                    ),
+                    const Text('Remember me'),
+                  ],
+                ),
+              ],
             ),
 
             Align(
@@ -136,6 +187,14 @@ class _TeacherLoginScreenState extends State<TeacherLoginScreen> {
                     const SnackBar(content: Text('Enter email and password')),
                   );
                   return;
+                }
+
+                final prefs = await SharedPreferences.getInstance();
+
+                if (rememberMe) {
+                  await prefs.setString('remember_email_teacher', email);
+                } else {
+                  await prefs.remove('remember_email_teacher');
                 }
 
                 try {

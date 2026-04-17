@@ -22,6 +22,9 @@ class _RegisterScreenState extends State<RegisterScreen> {
   final TextEditingController yearController = TextEditingController();
   String studentType = 'regular';
 
+  bool obscurePassword = true;
+  bool obscureConfirmPassword = true;
+
   static const primaryColor = Color(0xFFD72520);
 
   Future<void> registerUser() async {
@@ -166,10 +169,20 @@ class _RegisterScreenState extends State<RegisterScreen> {
             // Password
             TextField(
               controller: passwordController,
-              obscureText: true,
+              obscureText: obscurePassword,
               decoration: InputDecoration(
                 labelText: 'Password',
                 prefixIcon: const Icon(Icons.lock_outline),
+                suffixIcon: IconButton(
+                  icon: Icon(
+                    obscurePassword ? Icons.visibility : Icons.visibility_off,
+                  ),
+                  onPressed: () {
+                    setState(() {
+                      obscurePassword = !obscurePassword;
+                    });
+                  },
+                ),
                 border: OutlineInputBorder(
                   borderRadius: BorderRadius.circular(14),
                 ),

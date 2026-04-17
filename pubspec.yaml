@@ -41,6 +41,8 @@ dependencies:
   firebase_storage: ^12.4.10
   pdf: ^3.10.7
   printing: ^5.12.0
+  shared_preferences: ^2.2.2
+  fl_chart: ^0.68.0
 
   # The following adds the Cupertino Icons font to your application.
   # Use with the CupertinoIcons class for iOS style icons.
@@ -65,6 +67,8 @@ flutter:
 
   assets:
     - assets/images/east_LOGO-removebg-preview-removebg-preview.png
+    - assets/images/hide.png
+    - assets/images/view.png
     - assets/icon/
 
 flutter_icons:

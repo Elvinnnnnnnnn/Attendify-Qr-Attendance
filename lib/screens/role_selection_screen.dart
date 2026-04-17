@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'student_login_screen.dart';
 import 'teacher_login_screen.dart';
+import 'admin_login_screen.dart';
 
 class RoleSelectionScreen extends StatelessWidget {
   const RoleSelectionScreen({super.key});
@@ -108,6 +109,31 @@ class RoleSelectionScreen extends StatelessWidget {
               ),
               child: const Text(
                 'Teacher',
+                style: TextStyle(fontSize: 16),
+              ),
+            ),
+
+            const SizedBox(height: 16),
+
+            ElevatedButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) => const AdminLoginScreen(),
+                  ),
+                );
+              },
+              style: ElevatedButton.styleFrom(
+                minimumSize: const Size(double.infinity, 56),
+                backgroundColor: Colors.yellow,
+                foregroundColor: Colors.white,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(14),
+                ),
+              ),
+              child: const Text(
+                'Admin',
                 style: TextStyle(fontSize: 16),
               ),
             ),
